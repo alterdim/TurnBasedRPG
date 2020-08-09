@@ -74,6 +74,6 @@
     }
   ],
   "tilesets": [
-    {"label": "New Tileset", "path": "../images/tiles.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAQCAYAAAB3AH1ZAAAAAXNSR0IArs4c6QAAACxJREFUSIlj9Pfx+c9AAcjOyqJEOwMTRbqpAEYdMOqAUQeMOmDUAaMOGHUAAIzTA0UAkQNTAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
+    {"label": "New Tileset", "path": "../images/tiles.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAAAXNSR0IArs4c6QAAADtJREFUSIntz7ERACAMw0Bg/5aMkoLlYAgXotD3Pp/mCJ3um+x3VfS/ovUHDKAZQDOAZgDNAJoBNANoDzFPBQa7y14tAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
   ]
 }

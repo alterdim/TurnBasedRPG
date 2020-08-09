@@ -33,7 +33,7 @@ class PlayState extends FlxState
 		walls = map.loadTilemap(AssetPaths.tiles__png, "walls");
 		walls.follow();
 		walls.setTileProperties(1, FlxObject.NONE);
-		walls.setTileProperties(0, FlxObject.ANY);
+		walls.setTileProperties(2, FlxObject.ANY);
 		map.loadEntities(placeEntities, "entities");
 	}
 
@@ -48,7 +48,7 @@ class PlayState extends FlxState
 
 	function addEntities()
 	{
-		add(player);
 		add(walls);
+		add(player);
 	}
 }
