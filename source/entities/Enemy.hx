@@ -5,6 +5,8 @@ import flixel.FlxObject;
 import flixel.math.FlxPoint;
 import flixel.math.FlxVelocity;
 
+using flixel.util.FlxSpriteUtil;
+
 enum EnemyType
 {
 	REGULAR;
@@ -15,7 +17,8 @@ class Enemy extends Entity
 {
 	static inline var SPEED:Float = 140;
 
-	var type:EnemyType;
+	public var type:EnemyType;
+
 	var spritename:String;
 	var brain:FSM;
 	var idleTimer:Float;
@@ -90,6 +93,8 @@ class Enemy extends Entity
 
 	override public function update(elapsed:Float)
 	{
+		if (this.isFlickering())
+			return;
 		if ((velocity.x != 0 || velocity.y != 0) && touching == FlxObject.NONE)
 		{
 			if (Math.abs(velocity.x) > Math.abs(velocity.y))
@@ -121,5 +126,15 @@ class Enemy extends Entity
 		}
 		brain.update(elapsed);
 		super.update(elapsed);
+	}
+
+	public function changeType(type:EnemyType)
+	{
+		if (this.type != type)
+		{
+			this.type = type;
+			var graphic = "assets/images/" + spritename + ".png";
+			loadGraphic(graphic, true, 16, 16);
+		}
 	}
 }

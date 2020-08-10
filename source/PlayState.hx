@@ -10,6 +10,8 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.tile.FlxTilemap;
 import haxe.macro.Expr.Case;
 
+using flixel.util.FlxSpriteUtil;
+
 class PlayState extends FlxState
 {
 	var player:Player;
@@ -19,6 +21,8 @@ class PlayState extends FlxState
 	var hud:HUD;
 	var money:Int = 0;
 	var health:Int = 3;
+	var inCombat:Bool = false;
+	var combatHud:CombatHUD;
 
 	override public function create()
 	{
@@ -31,9 +35,32 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		FlxG.collide(player, walls);
-		FlxG.collide(enemies, walls);
-		enemies.forEachAlive(checkEnemyVision);
+		if (inCombat)
+		{
+			if (!combatHud.visible)
+			{
+				health = combatHud.playerHealth;
+				hud.updateHUD(health, money);
+				if (combatHud.outcome == VICTORY)
+				{
+					combatHud.enemy.kill();
+				}
+				else
+				{
+					combatHud.enemy.flicker();
+				}
+				inCombat = false;
+				player.active = true;
+				enemies.active = true;
+			}
+		}
+		else
+		{
+			FlxG.collide(player, walls);
+			FlxG.collide(enemies, walls);
+			enemies.forEachAlive(checkEnemyVision);
+			FlxG.overlap(player, enemies, playerTouchEnemy);
+		}
 	}
 
 	function checkEnemyVision(enemy:Enemy)
@@ -55,11 +82,28 @@ class PlayState extends FlxState
 		player = new Player();
 		enemies = new FlxTypedGroup<Enemy>();
 		map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
+		combatHud = new CombatHUD();
 		walls = map.loadTilemap(AssetPaths.tiles__png, "walls");
 		walls.follow();
 		walls.setTileProperties(1, FlxObject.NONE);
 		walls.setTileProperties(2, FlxObject.ANY);
 		map.loadEntities(placeEntities, "entities");
+	}
+
+	function playerTouchEnemy(player:Player, enemy:Enemy)
+	{
+		if (player.alive && player.exists && enemy.alive && enemy.exists && !enemy.isFlickering())
+		{
+			startCombat(enemy);
+		}
+	}
+
+	function startCombat(enemy:Enemy)
+	{
+		inCombat = true;
+		player.active = false;
+		enemies.active = false;
+		combatHud.initCombat(health, enemy);
 	}
 
 	function placeEntities(entity:EntityData)
@@ -78,8 +122,9 @@ class PlayState extends FlxState
 	function addEntities()
 	{
 		add(walls);
-		add(hud);
 		add(player);
 		add(enemies);
+		add(hud);
+		add(combatHud);
 	}
 }
