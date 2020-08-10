@@ -892,7 +892,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "12";
+	app.meta.h["build"] = "13";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "TurnBasedRPG";
 	app.meta.h["name"] = "TurnBasedRPG";
@@ -5145,10 +5145,13 @@ flixel_group_FlxTypedGroup.prototype = $extend(flixel_FlxBasic.prototype,{
 	,__class__: flixel_group_FlxTypedGroup
 	,__properties__: $extend(flixel_FlxBasic.prototype.__properties__,{get_memberRemoved:"get_memberRemoved",get_memberAdded:"get_memberAdded",set_maxSize:"set_maxSize"})
 });
-var CombatHUD = function() {
+var CombatHUD = function(player) {
 	this.wait = true;
 	this.alpha = 0;
+	this.selectionArray = [Choice.ATTACK,Choice.SPELL,Choice.ITEM,Choice.FLEE];
+	this.selectedId = 0;
 	flixel_group_FlxTypedGroup.call(this);
+	this.player = player;
 	this.screen = new flixel_FlxSprite().makeGraphic(flixel_FlxG.width,flixel_FlxG.height,0);
 	var waveEffect = new flixel_addons_effects_chainable_FlxWaveEffect(flixel_addons_effects_chainable_FlxWaveMode.ALL,4,-1,4);
 	var waveSprite = new flixel_addons_effects_chainable_FlxEffectSprite(this.screen,[waveEffect]);
@@ -5168,7 +5171,7 @@ var CombatHUD = function() {
 	this.enemySprite.set_active(false);
 	this.enemySprite.set_facing(1);
 	this.add(this.enemySprite);
-	this.playerHealthCounter = new flixel_text_FlxText(0,this.playerSprite.y + this.playerSprite.get_height() + 2,0,"3 / 3",8);
+	this.playerHealthCounter = new flixel_text_FlxText(0,this.playerSprite.y + this.playerSprite.get_height() + 2,0,player.hp + " / " + player.hp,8);
 	this.playerHealthCounter.set_alignment("center");
 	this.playerHealthCounter.set_x(this.playerSprite.x + 4 - this.playerHealthCounter.get_width() / 2);
 	this.add(this.playerHealthCounter);
@@ -5177,7 +5180,7 @@ var CombatHUD = function() {
 	this.add(this.enemyHealthBar);
 	this.choices = new haxe_ds_EnumValueMap();
 	var this1 = this.choices;
-	var v = new flixel_text_FlxText(this.background.x + 20,this.background.y + 120,85,"FIGHT",12);
+	var v = new flixel_text_FlxText(this.background.x + 20,this.background.y + 105,85,"FIGHT",12);
 	this1.set(Choice.ATTACK,v);
 	var this1 = this.choices;
 	var v = new flixel_text_FlxText(this.background.x + 20,this.choices.get(Choice.ATTACK).y + this.choices.get(Choice.ATTACK).get_height(),85,"SPELL",12);
@@ -5236,13 +5239,6 @@ var CombatHUD = function() {
 	});
 	this.set_active(false);
 	this.set_visible(false);
-	this.fledSound = flixel_FlxG.sound.load("assets/music/fled.wav");
-	this.hurtSound = flixel_FlxG.sound.load("assets/music/hurt.wav");
-	this.loseSound = flixel_FlxG.sound.load("assets/music/lose.wav");
-	this.missSound = flixel_FlxG.sound.load("assets/music/miss.wav");
-	this.selectSound = flixel_FlxG.sound.load("assets/music/select.wav");
-	this.winSound = flixel_FlxG.sound.load("assets/music/win.wav");
-	this.combatSound = flixel_FlxG.sound.load("assets/music/combat.wav");
 };
 $hxClasses["CombatHUD"] = CombatHUD;
 CombatHUD.__name__ = "CombatHUD";
@@ -5254,6 +5250,7 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 	,background: null
 	,playerSprite: null
 	,enemySprite: null
+	,player: null
 	,enemyHealth: null
 	,enemyMaxHealth: null
 	,enemyHealthBar: null
@@ -5261,17 +5258,12 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 	,damages: null
 	,pointer: null
 	,selected: null
+	,selectedId: null
+	,selectionArray: null
 	,choices: null
 	,results: null
 	,alpha: null
 	,wait: null
-	,fledSound: null
-	,hurtSound: null
-	,loseSound: null
-	,missSound: null
-	,selectSound: null
-	,winSound: null
-	,combatSound: null
 	,screen: null
 	,initCombat: function(playerHealth,enemy) {
 		this.screen.drawFrame();
@@ -5285,11 +5277,10 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 		var gc = 0.5;
 		var bc = 0.16666666666666666;
 		screenPixels.applyFilter(screenPixels,screenPixels.rect,new openfl_geom_Point(),new openfl_filters_ColorMatrixFilter([rc,gc,bc,0,0,rc,gc,bc,0,0,rc,gc,bc,0,0,0,0,0,1,0]));
-		this.combatSound.play();
 		this.playerHealth = playerHealth;
 		this.enemy = enemy;
 		this.updatePlayerHealth();
-		this.enemyMaxHealth = this.enemyHealth = enemy.type == entities_EnemyType.REGULAR ? 2 : 4;
+		this.enemyMaxHealth = this.enemyHealth = enemy.hp;
 		this.enemyHealthBar.set_value(100);
 		this.enemySprite.changeType(enemy.type);
 		this.wait = true;
@@ -5312,14 +5303,13 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 		this.set_active(true);
 		this.wait = false;
 		this.pointer.set_visible(true);
-		this.selectSound.play();
 	}
 	,finishFadeOut: function(_) {
 		this.set_active(false);
 		this.set_visible(false);
 	}
 	,updatePlayerHealth: function() {
-		this.playerHealthCounter.set_text(this.playerHealth + " / 3");
+		this.playerHealthCounter.set_text(this.playerHealth + " / " + this.player.hp);
 		this.playerHealthCounter.set_x(this.playerSprite.x + 4 - this.playerHealthCounter.get_width() / 2);
 	}
 	,update: function(elapsed) {
@@ -5341,11 +5331,20 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			down = true;
 		}
 		if(fire) {
-			this.selectSound.play();
 			this.makeChoice();
 		} else if(up || down) {
-			this.selected = this.selected == Choice.ATTACK ? Choice.FLEE : Choice.ATTACK;
-			this.selectSound.play();
+			if(up) {
+				this.selectedId--;
+			} else {
+				this.selectedId++;
+			}
+			if(this.selectedId > 3) {
+				this.selectedId = 0;
+			}
+			if(this.selectedId < 0) {
+				this.selectedId = 3;
+			}
+			this.selected = this.selectionArray[this.selectedId];
 			this.movePointer();
 		}
 	}
@@ -5360,7 +5359,6 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 				var choice1 = choice.next();
 				var text = this.choices.get(choice1);
 				if(touch.overlaps(text)) {
-					this.selectSound.play();
 					this.selected = choice1;
 					this.movePointer();
 					this.makeChoice();
@@ -5386,12 +5384,10 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 				flixel_tweens_FlxTween.tween(this.enemySprite,{ x : this.enemySprite.x + 4},0.1,{ onComplete : function(_) {
 					flixel_tweens_FlxTween.tween(_gthis.enemySprite,{ x : _gthis.enemySprite.x - 4},0.1);
 				}});
-				this.hurtSound.play();
 				this.enemyHealth--;
 				this.enemyHealthBar.set_value(this.enemyHealth / this.enemyMaxHealth * 100);
 			} else {
 				this.damages[1].set_text("MISS!");
-				this.missSound.play();
 			}
 			this.damages[1].set_x(this.enemySprite.x + 2 - this.damages[1].get_width() / 2);
 			this.damages[1].set_y(this.enemySprite.y + 4 - this.damages[1].get_height() / 2);
@@ -5404,10 +5400,10 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			flixel_tweens_FlxTween.num(0,1,.2,{ ease : flixel_tweens_FlxEase.circInOut, onComplete : $bind(this,this.doneDamageIn)},$bind(this,this.updateDamageAlpha));
 			break;
 		case 1:
-			haxe_Log.trace("TODO",{ fileName : "source/CombatHUD.hx", lineNumber : 392, className : "CombatHUD", methodName : "makeChoice"});
+			haxe_Log.trace("TODO",{ fileName : "source/CombatHUD.hx", lineNumber : 383, className : "CombatHUD", methodName : "makeChoice"});
 			break;
 		case 2:
-			haxe_Log.trace("TODO",{ fileName : "source/CombatHUD.hx", lineNumber : 394, className : "CombatHUD", methodName : "makeChoice"});
+			haxe_Log.trace("TODO",{ fileName : "source/CombatHUD.hx", lineNumber : 385, className : "CombatHUD", methodName : "makeChoice"});
 			break;
 		case 3:
 			var Chance = 50;
@@ -5417,7 +5413,6 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 			if(flixel_FlxG.random.float(0,100) < Chance) {
 				this.outcome = Outcome.ESCAPE;
 				this.results.set_text("ESCAPED!");
-				this.fledSound.play();
 				this.results.set_visible(true);
 				this.results.set_alpha(0);
 				flixel_tweens_FlxTween.tween(this.results,{ alpha : 1},.66,{ ease : flixel_tweens_FlxEase.circInOut, onComplete : $bind(this,this.doneResultsIn)});
@@ -5438,13 +5433,11 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 		if(flixel_FlxG.random.float(0,100) < Chance) {
 			flixel_FlxG.camera.flash(-1,.2);
 			flixel_FlxG.camera.shake(0.01,0.2);
-			this.hurtSound.play();
 			this.damages[0].set_text("1");
 			this.playerHealth--;
 			this.updatePlayerHealth();
 		} else {
 			this.damages[0].set_text("MISS!");
-			this.missSound.play();
 		}
 		this.damages[0].set_x(this.playerSprite.x + 2 - this.damages[0].get_width() / 2);
 		this.damages[0].set_y(this.playerSprite.y + 4 - this.damages[0].get_height() / 2);
@@ -5470,14 +5463,12 @@ CombatHUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 		this.damages[1].set_text("");
 		if(this.playerHealth <= 0) {
 			this.outcome = Outcome.DEFEAT;
-			this.loseSound.play();
 			this.results.set_text("DEFEAT!");
 			this.results.set_visible(true);
 			this.results.set_alpha(0);
 			flixel_tweens_FlxTween.tween(this.results,{ alpha : 1},0.66,{ ease : flixel_tweens_FlxEase.circInOut, onComplete : $bind(this,this.doneResultsIn)});
 		} else if(this.enemyHealth <= 0) {
 			this.outcome = Outcome.VICTORY;
-			this.winSound.play();
 			this.results.set_text("VICTORY!");
 			this.results.set_visible(true);
 			this.results.set_alpha(0);
@@ -5579,11 +5570,12 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
-var HUD = function() {
+var HUD = function(player) {
 	flixel_group_FlxTypedGroup.call(this);
+	this.player = player;
 	this.background = new flixel_FlxSprite().makeGraphic(flixel_FlxG.width,20,-16777216);
 	flixel_util_FlxSpriteUtil.drawRect(this.background,0,19,flixel_FlxG.width,1,-1);
-	this.healthCounter = new flixel_text_FlxText(16,2,0,"3 / 3",8);
+	this.healthCounter = new flixel_text_FlxText(16,2,0,player.hp + " / " + player.hp,8);
 	var _this = this.healthCounter;
 	var Color = -8355712;
 	var Size = 1;
@@ -5641,8 +5633,9 @@ HUD.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 	,moneyCounter: null
 	,healthIcon: null
 	,moneyIcon: null
+	,player: null
 	,updateHUD: function(health,money) {
-		this.healthCounter.set_text(health + " / 3");
+		this.healthCounter.set_text(health + " / " + this.player.hp);
 		this.moneyCounter.set_text(money == null ? "null" : "" + money);
 		this.moneyCounter.set_x(this.moneyIcon.x - this.moneyCounter.get_width() - 4);
 	}
@@ -6194,7 +6187,6 @@ MenuState.prototype = $extend(flixel_FlxState.prototype,{
 });
 var PlayState = function(MaxSize) {
 	this.inCombat = false;
-	this.health = 3;
 	this.money = 0;
 	flixel_FlxState.call(this,MaxSize);
 };
@@ -6215,6 +6207,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		flixel_FlxG.mouse.set_visible(false);
 		this.initializeEntities();
 		this.addEntities();
+		this.health = this.player.hp;
 		flixel_FlxG.camera.follow(this.player,flixel_FlxCameraFollowStyle.TOPDOWN,1);
 		flixel_FlxState.prototype.create.call(this);
 	}
@@ -6249,11 +6242,11 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		}
 	}
 	,initializeEntities: function() {
-		this.hud = new HUD();
 		this.player = new entities_Player();
+		this.hud = new HUD(this.player);
 		this.enemies = new flixel_group_FlxTypedGroup();
 		this.map = new flixel_addons_editors_ogmo_FlxOgmo3Loader("assets/data/turnBasedRPG.ogmo","assets/data/room-001.json");
-		this.combatHud = new CombatHUD();
+		this.combatHud = new CombatHUD(this.player);
 		this.walls = this.map.loadTilemap("assets/images/tiles.png","walls");
 		this.walls.follow();
 		this.walls.setTileProperties(1,0);
@@ -6262,14 +6255,14 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	}
 	,playerTouchEnemy: function(player,enemy) {
 		if(player.alive && player.exists && enemy.alive && enemy.exists && !flixel_effects_FlxFlicker.isFlickering(enemy)) {
-			this.startCombat(enemy);
+			this.startCombat(player,enemy);
 		}
 	}
-	,startCombat: function(enemy) {
+	,startCombat: function(player,enemy) {
 		this.inCombat = true;
-		this.player.set_active(false);
+		player.set_active(false);
 		this.enemies.set_active(false);
-		this.combatHud.initCombat(this.health,enemy);
+		this.combatHud.initCombat(player.hp,enemy);
 	}
 	,placeEntities: function(entity) {
 		switch(entity.name) {
@@ -9447,9 +9440,11 @@ var entities_Enemy = function(x,y,type) {
 	switch(type._hx_index) {
 	case 0:
 		this.spritename = "enemy";
+		this.hp = 2;
 		break;
 	case 1:
 		this.spritename = "boss";
+		this.hp = 4;
 		break;
 	}
 	entities_Entity.call(this,x,y,this.spritename);
@@ -9479,6 +9474,7 @@ entities_Enemy.prototype = $extend(entities_Entity.prototype,{
 	,brain: null
 	,idleTimer: null
 	,moveDirection: null
+	,hp: null
 	,seesPlayer: null
 	,playerPosition: null
 	,idle: function(elapsed) {
@@ -9589,6 +9585,7 @@ var entities_Player = function(x,y) {
 	if(x == null) {
 		x = 0;
 	}
+	this.hp = 5;
 	entities_Entity.call(this,x,y,"player");
 	this.drag.set_x(this.drag.set_y(1600));
 	this.setSize(8,8);
@@ -9598,7 +9595,8 @@ $hxClasses["entities.Player"] = entities_Player;
 entities_Player.__name__ = "entities.Player";
 entities_Player.__super__ = entities_Entity;
 entities_Player.prototype = $extend(entities_Entity.prototype,{
-	update: function(elapsed) {
+	hp: null
+	,update: function(elapsed) {
 		this.updateMovement();
 		entities_Entity.prototype.update.call(this,elapsed);
 	}

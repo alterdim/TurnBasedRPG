@@ -20,7 +20,7 @@ class PlayState extends FlxState
 	var enemies:FlxTypedGroup<Enemy>;
 	var hud:HUD;
 	var money:Int = 0;
-	var health:Int = 3;
+	var health:Int;
 	var inCombat:Bool = false;
 	var combatHud:CombatHUD;
 
@@ -31,6 +31,7 @@ class PlayState extends FlxState
 		#end
 		initializeEntities();
 		addEntities();
+		health = player.hp;
 		FlxG.camera.follow(player, TOPDOWN, 1);
 		super.create();
 	}
@@ -81,11 +82,11 @@ class PlayState extends FlxState
 
 	function initializeEntities()
 	{
-		hud = new HUD();
 		player = new Player();
+		hud = new HUD(player);
 		enemies = new FlxTypedGroup<Enemy>();
 		map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
-		combatHud = new CombatHUD();
+		combatHud = new CombatHUD(player);
 		walls = map.loadTilemap(AssetPaths.tiles__png, "walls");
 		walls.follow();
 		walls.setTileProperties(1, FlxObject.NONE);
@@ -97,16 +98,16 @@ class PlayState extends FlxState
 	{
 		if (player.alive && player.exists && enemy.alive && enemy.exists && !enemy.isFlickering())
 		{
-			startCombat(enemy);
+			startCombat(player, enemy);
 		}
 	}
 
-	function startCombat(enemy:Enemy)
+	function startCombat(player:Player, enemy:Enemy)
 	{
 		inCombat = true;
 		player.active = false;
 		enemies.active = false;
-		combatHud.initCombat(health, enemy);
+		combatHud.initCombat(player.hp, enemy);
 	}
 
 	function placeEntities(entity:EntityData)

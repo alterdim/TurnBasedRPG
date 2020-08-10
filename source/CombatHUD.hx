@@ -52,6 +52,8 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	var playerSprite:Player; // this is a sprite of the playerSprite
 	var enemySprite:Enemy; // this is a sprite of the enemySprite
 
+	var player:Player;
+
 	// These variables will be used to track the enemySprite's health
 	var enemyHealth:Int;
 	var enemyMaxHealth:Int;
@@ -63,6 +65,8 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 
 	var pointer:FlxSprite; // This will be the pointer to show which option (Fight or Flee) the user is pointing to.
 	var selected:Choice; // this will track which option is selected
+	var selectedId:Int = 0;
+	var selectionArray:Array<Choice> = [ATTACK, SPELL, ITEM, FLEE];
 	var choices:Map<Choice, FlxText>; // this map will contain the FlxTexts for our 2 options: Fight and Flee
 
 	var results:FlxText; // this text will show the outcome of the battle for the playerSprite.
@@ -70,19 +74,13 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	var alpha:Float = 0; // we will use this to fade in and out our combat hud
 	var wait:Bool = true; // this flag will be set to true when don't want the playerSprite to be able to do anything (between turns)
 
-	var fledSound:FlxSound;
-	var hurtSound:FlxSound;
-	var loseSound:FlxSound;
-	var missSound:FlxSound;
-	var selectSound:FlxSound;
-	var winSound:FlxSound;
-	var combatSound:FlxSound;
-
 	var screen:FlxSprite;
 
-	public function new()
+	public function new(player:Player)
 	{
 		super();
+
+		this.player = player;
 
 		screen = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 		var waveEffect = new FlxWaveEffect(FlxWaveMode.ALL, 4, -1, 4);
@@ -111,7 +109,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		add(enemySprite);
 
 		// setup the playerSprite's health display and add it to the group.
-		playerHealthCounter = new FlxText(0, playerSprite.y + playerSprite.height + 2, 0, "3 / 3", 8);
+		playerHealthCounter = new FlxText(0, playerSprite.y + playerSprite.height + 2, 0, player.hp + " / " + player.hp, 8);
 		playerHealthCounter.alignment = CENTER;
 		playerHealthCounter.x = playerSprite.x + 4 - (playerHealthCounter.width / 2);
 		add(playerHealthCounter);
@@ -168,14 +166,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		// mark this object as not active and not visible so update and draw don't get called on it until we're ready to show it.
 		active = false;
 		visible = false;
-
-		fledSound = FlxG.sound.load(AssetPaths.fled__wav);
-		hurtSound = FlxG.sound.load(AssetPaths.hurt__wav);
-		loseSound = FlxG.sound.load(AssetPaths.lose__wav);
-		missSound = FlxG.sound.load(AssetPaths.miss__wav);
-		selectSound = FlxG.sound.load(AssetPaths.select__wav);
-		winSound = FlxG.sound.load(AssetPaths.win__wav);
-		combatSound = FlxG.sound.load(AssetPaths.combat__wav);
 	}
 
 	/**
@@ -199,14 +189,13 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		screenPixels.applyFilter(screenPixels, screenPixels.rect, new Point(),
 			new ColorMatrixFilter([rc, gc, bc, 0, 0, rc, gc, bc, 0, 0, rc, gc, bc, 0, 0, 0, 0, 0, 1, 0]));
 
-		combatSound.play();
 		this.playerHealth = playerHealth; // we set our playerHealth variable to the value that was passed to us
 		this.enemy = enemy; // set our enemySprite object to the one passed to us
 
 		updatePlayerHealth();
 
 		// setup our enemySprite
-		enemyMaxHealth = enemyHealth = if (enemy.type == REGULAR) 2 else 4; // each enemySprite will have health based on their type
+		enemyMaxHealth = enemyHealth = enemy.hp; // each enemySprite will have health based on their type
 		enemyHealthBar.value = 100; // the enemySprite's health bar starts at 100%
 		enemySprite.changeType(enemy.type); // change our enemySprite's image to match their type.
 
@@ -242,7 +231,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		active = true;
 		wait = false;
 		pointer.visible = true;
-		selectSound.play();
 	}
 
 	/**
@@ -259,7 +247,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	 */
 	function updatePlayerHealth()
 	{
-		playerHealthCounter.text = playerHealth + " / 3";
+		playerHealthCounter.text = playerHealth + " / " + player.hp;
 		playerHealthCounter.x = playerSprite.x + 4 - (playerHealthCounter.width / 2);
 	}
 
@@ -298,14 +286,20 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		// based on which flags are set, do the specified action
 		if (fire)
 		{
-			selectSound.play();
 			makeChoice(); // when the playerSprite chooses either option, we call this function to process their selection
 		}
 		else if (up || down)
 		{
 			// if the playerSprite presses up or down, we move the cursor up or down (with wrapping)
-			selected = if (selected == ATTACK) FLEE else ATTACK;
-			selectSound.play();
+			if (up)
+				selectedId--;
+			else
+				selectedId++;
+			if (selectedId > 3)
+				selectedId = 0;
+			if (selectedId < 0)
+				selectedId = 3;
+			selected = selectionArray[selectedId];
 			movePointer();
 		}
 		#end
@@ -321,7 +315,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				var text = choices[choice];
 				if (touch.overlaps(text))
 				{
-					selectSound.play();
 					selected = choice;
 					movePointer();
 					makeChoice();
@@ -352,7 +345,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				// if FIGHT was picked...
 				// ...the playerSprite attacks the enemySprite first
 				// they have an 85% chance to hit the enemySprite
-				if (FlxG.random.bool(85))
+				if (FlxG.random.bool(95))
 				{
 					// if they hit, deal 1 damage to the enemySprite, and setup our damage indicator
 					damages[1].text = "1";
@@ -362,7 +355,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 							FlxTween.tween(enemySprite, {x: enemySprite.x - 4}, 0.1);
 						}
 					});
-					hurtSound.play();
 					enemyHealth--;
 					enemyHealthBar.value = (enemyHealth / enemyMaxHealth) * 100; // change the enemySprite's health bar
 				}
@@ -370,7 +362,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				{
 					// change our damage text to show that we missed!
 					damages[1].text = "MISS!";
-					missSound.play();
 				}
 
 				// position the damage text over the enemySprite, and set it's alpha to 0 but it's visible to true (so that it gets draw called on it)
@@ -399,7 +390,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 					// if they succeed, we show the 'escaped' message and trigger it to fade in
 					outcome = ESCAPE;
 					results.text = "ESCAPED!";
-					fledSound.play();
 					results.visible = true;
 					results.alpha = 0;
 					FlxTween.tween(results, {alpha: 1}, .66, {ease: FlxEase.circInOut, onComplete: doneResultsIn});
@@ -428,7 +418,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 			// if we hit, flash the screen white, and deal one damage to the playerSprite - then update the playerSprite's health
 			FlxG.camera.flash(FlxColor.WHITE, .2);
 			FlxG.camera.shake(0.01, 0.2);
-			hurtSound.play();
 			damages[0].text = "1";
 			playerHealth--;
 			updatePlayerHealth();
@@ -437,7 +426,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		{
 			// if the enemySprite misses, show it on the screen
 			damages[0].text = "MISS!";
-			missSound.play();
 		}
 
 		// setup the combat text to show up over the playerSprite and fade in/raise up
@@ -494,7 +482,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		{
 			// if the playerSprite's health is 0, we show the defeat message on the screen and fade it in
 			outcome = DEFEAT;
-			loseSound.play();
 			results.text = "DEFEAT!";
 			results.visible = true;
 			results.alpha = 0;
@@ -504,7 +491,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		{
 			// if the enemySprite's health is 0, we show the victory message
 			outcome = VICTORY;
-			winSound.play();
 			results.text = "VICTORY!";
 			results.visible = true;
 			results.alpha = 0;
