@@ -16,6 +16,9 @@ class PlayState extends FlxState
 	var map:FlxOgmo3Loader;
 	var walls:FlxTilemap;
 	var enemies:FlxTypedGroup<Enemy>;
+	var hud:HUD;
+	var money:Int = 0;
+	var health:Int = 3;
 
 	override public function create()
 	{
@@ -48,6 +51,7 @@ class PlayState extends FlxState
 
 	function initializeEntities()
 	{
+		hud = new HUD();
 		player = new Player();
 		enemies = new FlxTypedGroup<Enemy>();
 		map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
@@ -74,6 +78,7 @@ class PlayState extends FlxState
 	function addEntities()
 	{
 		add(walls);
+		add(hud);
 		add(player);
 		add(enemies);
 	}
