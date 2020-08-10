@@ -892,7 +892,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "5";
+	app.meta.h["build"] = "8";
 	app.meta.h["company"] = "HaxeFlixel";
 	app.meta.h["file"] = "TurnBasedRPG";
 	app.meta.h["name"] = "TurnBasedRPG";
@@ -4469,7 +4469,7 @@ openfl_display_Sprite.prototype = $extend(openfl_display_DisplayObjectContainer.
 });
 var Main = function() {
 	openfl_display_Sprite.call(this);
-	this.addChild(new flixel_FlxGame(0,0,MenuState));
+	this.addChild(new flixel_FlxGame(320,240,MenuState));
 };
 $hxClasses["Main"] = Main;
 Main.__name__ = "Main";
@@ -4664,7 +4664,7 @@ ManifestResources.init = function(config) {
 	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$nokiafc22_$ttf);
 	openfl_text_Font.registerFont(_$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf);
 	var bundle;
-	var data = "{\"name\":null,\"assets\":\"aoy4:pathy29:assets%2Fdata%2Froom-001.jsony4:sizei4348y4:typey4:TEXTy2:idR1y7:preloadtgoR0y33:assets%2Fdata%2FturnBasedRPG.ogmoR2i2165R3R4R5R7R6tgoR0y28:assets%2Fimages%2Fplayer.pngR2i99R3y5:IMAGER5R8R6tgoR0y27:assets%2Fimages%2Ftiles.pngR2i129R3R9R5R10R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R4R5R11R6tgoR2i2114R3y5:MUSICR5y26:flixel%2Fsounds%2Fbeep.mp3y9:pathGroupaR13y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i39706R3R12R5y28:flixel%2Fsounds%2Fflixel.mp3R14aR16y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i5794R3y5:SOUNDR5R15R14aR13R15hgoR2i33629R3R18R5R17R14aR16R17hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R19R20y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i519R3R9R5R25R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i3280R3R9R5R26R6tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
+	var data = "{\"name\":null,\"assets\":\"aoy4:pathy29:assets%2Fdata%2Froom-001.jsony4:sizei4659y4:typey4:TEXTy2:idR1y7:preloadtgoR0y33:assets%2Fdata%2FturnBasedRPG.ogmoR2i3914R3R4R5R7R6tgoR0y26:assets%2Fimages%2Fboss.pngR2i2558R3y5:IMAGER5R8R6tgoR0y27:assets%2Fimages%2Fenemy.pngR2i2405R3R9R5R10R6tgoR0y28:assets%2Fimages%2Fplayer.pngR2i99R3R9R5R11R6tgoR0y27:assets%2Fimages%2Ftiles.pngR2i129R3R9R5R12R6tgoR0y36:assets%2Fsounds%2Fsounds-go-here.txtR2zR3R4R5R13R6tgoR2i2114R3y5:MUSICR5y26:flixel%2Fsounds%2Fbeep.mp3y9:pathGroupaR15y26:flixel%2Fsounds%2Fbeep.ogghR6tgoR2i39706R3R14R5y28:flixel%2Fsounds%2Fflixel.mp3R16aR18y28:flixel%2Fsounds%2Fflixel.ogghR6tgoR2i5794R3y5:SOUNDR5R17R16aR15R17hgoR2i33629R3R20R5R19R16aR18R19hgoR2i15744R3y4:FONTy9:classNamey35:__ASSET__flixel_fonts_nokiafc22_ttfR5y30:flixel%2Ffonts%2Fnokiafc22.ttfR6tgoR2i29724R3R21R22y36:__ASSET__flixel_fonts_monsterrat_ttfR5y31:flixel%2Ffonts%2Fmonsterrat.ttfR6tgoR0y33:flixel%2Fimages%2Fui%2Fbutton.pngR2i519R3R9R5R27R6tgoR0y36:flixel%2Fimages%2Flogo%2Fdefault.pngR2i3280R3R9R5R28R6tgh\",\"rootPath\":null,\"version\":2,\"libraryArgs\":[],\"libraryType\":null}";
 	var manifest = lime_utils_AssetManifest.parse(data,ManifestResources.rootPath);
 	var library = lime_utils_AssetLibrary.fromManifest(manifest);
 	lime_utils_Assets.registerLibrary("default",library);
@@ -5777,17 +5777,30 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	player: null
 	,map: null
 	,walls: null
+	,enemies: null
 	,create: function() {
 		this.initializeEntities();
 		this.addEntities();
+		flixel_FlxG.camera.follow(this.player,flixel_FlxCameraFollowStyle.TOPDOWN,1);
 		flixel_FlxState.prototype.create.call(this);
 	}
 	,update: function(elapsed) {
 		flixel_FlxState.prototype.update.call(this,elapsed);
 		flixel_FlxG.overlap(this.player,this.walls,null,flixel_FlxObject.separate);
+		flixel_FlxG.overlap(this.enemies,this.walls,null,flixel_FlxObject.separate);
+		this.enemies.forEachAlive($bind(this,this.checkEnemyVision));
+	}
+	,checkEnemyVision: function(enemy) {
+		if(this.walls.ray(enemy.getMidpoint(),this.player.getMidpoint())) {
+			enemy.seesPlayer = true;
+			enemy.playerPosition = this.player.getMidpoint();
+		} else {
+			enemy.seesPlayer = false;
+		}
 	}
 	,initializeEntities: function() {
 		this.player = new entities_Player();
+		this.enemies = new flixel_group_FlxTypedGroup();
 		this.map = new flixel_addons_editors_ogmo_FlxOgmo3Loader("assets/data/turnBasedRPG.ogmo","assets/data/room-001.json");
 		this.walls = this.map.loadTilemap("assets/images/tiles.png","walls");
 		this.walls.follow();
@@ -5796,13 +5809,22 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.map.loadEntities($bind(this,this.placeEntities),"entities");
 	}
 	,placeEntities: function(entity) {
-		if(entity.name == "player") {
+		switch(entity.name) {
+		case "boss":
+			this.enemies.add(new entities_Enemy(entity.x + 4,entity.y,entities_EnemyType.BOSS));
+			break;
+		case "enemy":
+			this.enemies.add(new entities_Enemy(entity.x + 4,entity.y,entities_EnemyType.REGULAR));
+			break;
+		case "player":
 			this.player.setPosition(entity.x,entity.y);
+			break;
 		}
 	}
 	,addEntities: function() {
 		this.add(this.walls);
 		this.add(this.player);
+		this.add(this.enemies);
 	}
 	,__class__: PlayState
 });
@@ -6488,6 +6510,10 @@ Xml.prototype = {
 		return haxe_xml_Printer.print(this);
 	}
 	,__class__: Xml
+};
+var entities_EnemyType = $hxEnums["entities.EnemyType"] = { __ename__ : "entities.EnemyType", __constructs__ : ["REGULAR","BOSS"]
+	,REGULAR: {_hx_index:0,__enum__:"entities.EnemyType",toString:$estr}
+	,BOSS: {_hx_index:1,__enum__:"entities.EnemyType",toString:$estr}
 };
 var flixel_util_IFlxPooled = function() { };
 $hxClasses["flixel.util.IFlxPooled"] = flixel_util_IFlxPooled;
@@ -8952,6 +8978,127 @@ entities_Entity.__super__ = flixel_FlxSprite;
 entities_Entity.prototype = $extend(flixel_FlxSprite.prototype,{
 	__class__: entities_Entity
 });
+var entities_Enemy = function(x,y,type) {
+	switch(type._hx_index) {
+	case 0:
+		this.spritename = "enemy";
+		break;
+	case 1:
+		this.spritename = "boss";
+		break;
+	}
+	entities_Entity.call(this,x,y,this.spritename);
+	this.type = type;
+	this._facingFlip.h[1] = { x : false, y : false};
+	this._facingFlip.h[16] = { x : true, y : false};
+	this.animation.add("d",[0,1,0,2],6,false);
+	this.animation.add("lr",[3,4,3,5],6,false);
+	this.animation.add("u",[6,7,6,8],6,false);
+	this.drag.set_x(this.drag.set_y(10));
+	this.set_width(8);
+	this.set_height(14);
+	this.offset.set_x(4);
+	this.offset.set_y(2);
+	this.brain = new entities_FSM($bind(this,this.idle));
+	this.idleTimer = 0;
+	var point = flixel_math_FlxPoint._pool.get().set(0,0);
+	point._inPool = false;
+	this.playerPosition = point;
+};
+$hxClasses["entities.Enemy"] = entities_Enemy;
+entities_Enemy.__name__ = "entities.Enemy";
+entities_Enemy.__super__ = entities_Entity;
+entities_Enemy.prototype = $extend(entities_Entity.prototype,{
+	type: null
+	,spritename: null
+	,brain: null
+	,idleTimer: null
+	,moveDirection: null
+	,seesPlayer: null
+	,playerPosition: null
+	,idle: function(elapsed) {
+		if(this.seesPlayer) {
+			this.brain.activeState = $bind(this,this.chase);
+		} else if(this.idleTimer <= 0) {
+			var Chance = 1;
+			if(Chance == null) {
+				Chance = 50;
+			}
+			if(flixel_FlxG.random.float(0,100) < Chance) {
+				this.moveDirection = -1;
+				this.velocity.set_x(this.velocity.set_y(0));
+			} else {
+				this.moveDirection = flixel_FlxG.random.int(0,8) * 45;
+				this.velocity.set(70.,0);
+				var tmp = this.velocity;
+				var X1 = 0;
+				var Y1 = 0;
+				if(Y1 == null) {
+					Y1 = 0;
+				}
+				if(X1 == null) {
+					X1 = 0;
+				}
+				var point = flixel_math_FlxPoint._pool.get().set(X1,Y1);
+				point._inPool = false;
+				var point1 = point;
+				point1._weak = true;
+				tmp.rotate(point1,this.moveDirection);
+			}
+			this.idleTimer = flixel_FlxG.random.int(1,4);
+		} else {
+			this.idleTimer -= elapsed;
+		}
+	}
+	,chase: function(elapsed) {
+		if(!this.seesPlayer) {
+			this.brain.activeState = $bind(this,this.idle);
+		} else {
+			flixel_math_FlxVelocity.moveTowardsPoint(this,this.playerPosition,140);
+		}
+	}
+	,update: function(elapsed) {
+		if((this.velocity.x != 0 || this.velocity.y != 0) && this.touching == 0) {
+			if(Math.abs(this.velocity.x) > Math.abs(this.velocity.y)) {
+				if(this.velocity.x < 0) {
+					this.set_facing(1);
+				} else {
+					this.set_facing(16);
+				}
+			} else if(this.velocity.y < 0) {
+				this.set_facing(256);
+			} else {
+				this.set_facing(4096);
+			}
+			switch(this.facing) {
+			case 1:case 16:
+				this.animation.play("lr");
+				break;
+			case 256:
+				this.animation.play("u");
+				break;
+			case 4096:
+				this.animation.play("d");
+				break;
+			}
+		}
+		this.brain.update(elapsed);
+		entities_Entity.prototype.update.call(this,elapsed);
+	}
+	,__class__: entities_Enemy
+});
+var entities_FSM = function(initialState) {
+	this.activeState = initialState;
+};
+$hxClasses["entities.FSM"] = entities_FSM;
+entities_FSM.__name__ = "entities.FSM";
+entities_FSM.prototype = {
+	activeState: null
+	,update: function(elapsed) {
+		this.activeState(elapsed);
+	}
+	,__class__: entities_FSM
+};
 var entities_Player = function(x,y) {
 	if(y == null) {
 		y = 0;
@@ -40315,8 +40462,8 @@ flixel_tile_FlxTilemap.prototype = $extend(flixel_tile_FlxBaseTilemap.prototype,
 				X1 = 0;
 			}
 			var _this = flixel_math_FlxRect._pool.get();
-			var X11 = X1;
-			var Y11 = Y1;
+			var X2 = X1;
+			var Y2 = Y1;
 			var Width1 = Width;
 			var Height1 = Height;
 			if(Height1 == null) {
@@ -40325,14 +40472,14 @@ flixel_tile_FlxTilemap.prototype = $extend(flixel_tile_FlxBaseTilemap.prototype,
 			if(Width1 == null) {
 				Width1 = 0;
 			}
-			if(Y11 == null) {
-				Y11 = 0;
+			if(Y2 == null) {
+				Y2 = 0;
 			}
-			if(X11 == null) {
-				X11 = 0;
+			if(X2 == null) {
+				X2 = 0;
 			}
-			_this.x = X11;
-			_this.y = Y11;
+			_this.x = X2;
+			_this.y = Y2;
 			_this.width = Width1;
 			_this.height = Height1;
 			var rect = _this;
@@ -43243,6 +43390,11 @@ flixel_util_FlxArrayUtil.setLength_Int = function(array,newLength) {
 	}
 	return array;
 };
+flixel_util_FlxArrayUtil.swapAndPop_fastSplice_T = function(array,index) {
+	array[index] = array[array.length - 1];
+	array.pop();
+	return array;
+};
 flixel_util_FlxArrayUtil.flatten2DArray_Int = function(array) {
 	var result = [];
 	var _g = 0;
@@ -43257,11 +43409,6 @@ flixel_util_FlxArrayUtil.flatten2DArray_Int = function(array) {
 		}
 	}
 	return result;
-};
-flixel_util_FlxArrayUtil.swapAndPop_fastSplice_T = function(array,index) {
-	array[index] = array[array.length - 1];
-	array.pop();
-	return array;
 };
 flixel_util_FlxArrayUtil.setLength_flixel_group_FlxTypedGroup_T = function(array,newLength) {
 	if(newLength < 0) {
@@ -67230,7 +67377,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 936028;
+	this.version = 284767;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
@@ -111543,10 +111690,8 @@ openfl_display_DisplayObject.__tempStack = new lime_utils_ObjectPool(function() 
 });
 AssetPaths.room_001__json = "assets/data/room-001.json";
 AssetPaths.turnBasedRPG__ogmo = "assets/data/turnBasedRPG.ogmo";
-AssetPaths.images_go_here__txt = "assets/images/images-go-here.txt";
 AssetPaths.player__png = "assets/images/player.png";
 AssetPaths.tiles__png = "assets/images/tiles.png";
-AssetPaths.music_goes_here__txt = "assets/music/music-goes-here.txt";
 AssetPaths.sounds_go_here__txt = "assets/sounds/sounds-go-here.txt";
 openfl_text_Font.__fontByName = new haxe_ds_StringMap();
 openfl_text_Font.__registeredFonts = [];
@@ -111625,6 +111770,7 @@ flixel_FlxObject._secondSeparateFlxRect = (function($this) {
 	$r = rect;
 	return $r;
 }(this));
+entities_Enemy.SPEED = 140;
 entities_Player.SPEED = 200;
 openfl__$Vector_FloatVector.__meta__ = { obj : { SuppressWarnings : ["checkstyle:FieldDocComment"]}, fields : { toJSON : { SuppressWarnings : ["checkstyle:Dynamic"]}, _ : { SuppressWarnings : ["checkstyle:Dynamic"]}}};
 flixel_math_FlxPoint._pool = new flixel_util_FlxPool_$flixel_$math_$FlxPoint(flixel_math_FlxPoint);
