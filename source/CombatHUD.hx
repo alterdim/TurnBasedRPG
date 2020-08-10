@@ -1,6 +1,7 @@
 package;
 
 import entities.Enemy;
+import entities.Entity;
 import entities.Player;
 import flash.filters.ColorMatrixFilter;
 import flash.geom.Matrix;
@@ -333,6 +334,17 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		pointer.y = choices[selected].y + (choices[selected].height / 2) - 8;
 	}
 
+	function calculatePhysicalDamage(attacker:Entity, attacked:Entity, modifier:Int = 1)
+	{
+		if (FlxG.random.bool(95))
+			return ((attacker.atk) / 2 - (attacked.def / 4)) * modifier;
+		else
+		{
+			FlxG.camera.shake(0.01, 0.2);
+			return (attacker.atk / 2) * modifier;
+		}
+	}
+
 	/**
 	 * This function will process the choice the playerSprite picked
 	 */
@@ -344,18 +356,18 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 			case ATTACK:
 				// if FIGHT was picked...
 				// ...the playerSprite attacks the enemySprite first
-				// they have an 85% chance to hit the enemySprite
+				// they have an 95% chance to hit the enemySprite
 				if (FlxG.random.bool(95))
 				{
-					// if they hit, deal 1 damage to the enemySprite, and setup our damage indicator
-					damages[1].text = "1";
+					var damageCount:Int = Math.floor(calculatePhysicalDamage(player, enemy));
+					damages[1].text = Std.string(damageCount);
 					FlxTween.tween(enemySprite, {x: enemySprite.x + 4}, 0.1, {
 						onComplete: function(_)
 						{
 							FlxTween.tween(enemySprite, {x: enemySprite.x - 4}, 0.1);
 						}
 					});
-					enemyHealth--;
+					enemyHealth -= damageCount;
 					enemyHealthBar.value = (enemyHealth / enemyMaxHealth) * 100; // change the enemySprite's health bar
 				}
 				else

@@ -7,11 +7,12 @@ class Player extends Entity
 {
 	static inline var SPEED:Float = 200;
 
-	public var hp:Int = 5;
-
 	public function new(x:Float = 0, y:Float = 0)
 	{
 		super(x, y, "player");
+		this.hp = 5;
+		atk = agi = int = def = 2;
+		mp = 3;
 		drag.x = drag.y = 1600;
 		setSize(8, 8);
 		offset.set(4, 4);
