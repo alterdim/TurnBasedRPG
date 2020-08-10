@@ -34,7 +34,9 @@ enum Outcome
 
 enum Choice
 {
-	FIGHT;
+	ATTACK;
+	SPELL;
+	ITEM;
 	FLEE;
 }
 
@@ -88,9 +90,9 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		add(waveSprite);
 
 		// first, create our background. Make a black square, then draw borders onto it in white. Add it to our group.
-		background = new FlxSprite().makeGraphic(120, 120, FlxColor.WHITE);
-		background.drawRect(1, 1, 118, 44, FlxColor.BLACK);
-		background.drawRect(1, 46, 118, 73, FlxColor.BLACK);
+		background = new FlxSprite().makeGraphic(302, 203, FlxColor.WHITE);
+		background.drawRect(1, 1, 300, 80, FlxColor.BLACK);
+		background.drawRect(1, 82, 300, 120, FlxColor.BLACK);
 		background.screenCenter();
 		add(background);
 
@@ -121,12 +123,17 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 
 		// create our choices and add them to the group.
 		choices = new Map();
-		choices[FIGHT] = new FlxText(background.x + 30, background.y + 48, 85, "FIGHT", 22);
-		choices[FLEE] = new FlxText(background.x + 30, choices[FIGHT].y + choices[FIGHT].height + 8, 85, "FLEE", 22);
-		add(choices[FIGHT]);
+		choices[ATTACK] = new FlxText(background.x + 20, background.y + 105, 85, "FIGHT", 12);
+		choices[SPELL] = new FlxText(background.x + 20, choices[ATTACK].y + choices[ATTACK].height, 85, "SPELL", 12);
+		choices[ITEM] = new FlxText(background.x + 20, choices[ATTACK].y + choices[ATTACK].height + choices[SPELL].height, 85, "ITEM", 12);
+		choices[FLEE] = new FlxText(background.x + 20, choices[ATTACK].y + choices[ATTACK].height + choices[SPELL].height + choices[ITEM].height, 85, "FLEE",
+			12);
+		add(choices[ATTACK]);
+		add(choices[SPELL]);
+		add(choices[ITEM]);
 		add(choices[FLEE]);
 
-		pointer = new FlxSprite(background.x + 10, choices[FIGHT].y + (choices[FIGHT].height / 2) - 8, AssetPaths.pointer__png);
+		pointer = new FlxSprite(background.x + 10, choices[ATTACK].y + (choices[ATTACK].height / 2) - 8, AssetPaths.pointer__png);
 		pointer.visible = false;
 		add(pointer);
 
@@ -209,7 +216,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		pointer.visible = false;
 		results.visible = false;
 		outcome = NONE;
-		selected = FIGHT;
+		selected = ATTACK;
 		movePointer();
 
 		visible = true; // make our hud visible (so draw gets called on it) - note, it's not active, yet!
@@ -297,7 +304,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		else if (up || down)
 		{
 			// if the playerSprite presses up or down, we move the cursor up or down (with wrapping)
-			selected = if (selected == FIGHT) FLEE else FIGHT;
+			selected = if (selected == ATTACK) FLEE else ATTACK;
 			selectSound.play();
 			movePointer();
 		}
@@ -341,7 +348,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		pointer.visible = false; // hide our pointer
 		switch (selected) // check which item was selected when the playerSprite picked it
 		{
-			case FIGHT:
+			case ATTACK:
 				// if FIGHT was picked...
 				// ...the playerSprite attacks the enemySprite first
 				// they have an 85% chance to hit the enemySprite
@@ -381,7 +388,10 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				// setup 2 tweens to allow the damage indicators to fade in and float up from the sprites
 				FlxTween.num(damages[0].y, damages[0].y - 12, 1, {ease: FlxEase.circOut}, updateDamageY);
 				FlxTween.num(0, 1, .2, {ease: FlxEase.circInOut, onComplete: doneDamageIn}, updateDamageAlpha);
-
+			case SPELL:
+				trace("TODO");
+			case ITEM:
+				trace("TODO");
 			case FLEE:
 				// if the playerSprite chose to FLEE, we'll give them a 50/50 chance to escape
 				if (FlxG.random.bool(50))

@@ -24,6 +24,8 @@ class Enemy extends Entity
 	var idleTimer:Float;
 	var moveDirection:Float;
 
+	public var hp:Int;
+
 	public var seesPlayer:Bool;
 	public var playerPosition:FlxPoint;
 
@@ -33,8 +35,10 @@ class Enemy extends Entity
 		{
 			case REGULAR:
 				spritename = "enemy";
+				hp = 2;
 			case BOSS:
 				spritename = "boss";
+				hp = 4;
 		}
 		super(x, y, spritename);
 		this.type = type;
@@ -133,6 +137,13 @@ class Enemy extends Entity
 		if (this.type != type)
 		{
 			this.type = type;
+			switch (type)
+			{
+				case REGULAR:
+					spritename = "enemy";
+				case BOSS:
+					spritename = "boss";
+			}
 			var graphic = "assets/images/" + spritename + ".png";
 			loadGraphic(graphic, true, 16, 16);
 		}

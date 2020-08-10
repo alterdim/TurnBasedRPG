@@ -26,6 +26,9 @@ class PlayState extends FlxState
 
 	override public function create()
 	{
+		#if FLX_MOUSE
+		FlxG.mouse.visible = false;
+		#end
 		initializeEntities();
 		addEntities();
 		FlxG.camera.follow(player, TOPDOWN, 1);
