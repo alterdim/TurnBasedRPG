@@ -1,3 +1,12 @@
 package abilities;
 
-enum Elements {}
+enum Elements
+{
+	PHYSICAL;
+	FIRE;
+	WATER;
+	EARTH;
+	THUNDER;
+	LIGHT;
+	DARK;
+}

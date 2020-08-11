@@ -1,5 +1,6 @@
 package entities;
 
+import abilities.Spell;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.math.FlxPoint;
@@ -22,6 +23,8 @@ class Player extends Entity
 		drag.x = drag.y = 1600;
 		setSize(8, 8);
 		offset.set(4, 4);
+		var spellTest:Spell = new Spell("Test", 0, true, 3, 0.03, "A spell");
+		learnSpell(spellTest);
 	}
 
 	override function update(elapsed:Float)
