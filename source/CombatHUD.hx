@@ -1,6 +1,5 @@
 package;
 
-import abilities.Spell;
 import entities.Enemy;
 import entities.Entity;
 import entities.Player;
@@ -61,7 +60,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	var enemyMaxHealth:Int;
 	var enemyHealthBar:FlxBar; // This FlxBar will show us the enemySprite's current/max health
 
-	var healthIcon:FlxSprite;
 	var playerHealthCounter:FlxText; // this will show the playerSprite's current/max health
 
 	var damages:Array<FlxText>; // This array will contain 2 FlxText objects which will appear to show damage dealt (or misses)
@@ -70,9 +68,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	var selected:Choice; // this will track which option is selected
 	var selectedId:Int = 0;
 	var selectionArray:Array<Choice> = [ATTACK, SPELL, ITEM, FLEE];
-	var choices:Map<Choice, FlxText>; // this map contains the choices and their associated buttons
-	var spellChoices:Map<Spell, FlxText>; // this map contains spell references of the player and their names
-	var spellIndex:Int = 0;
+	var choices:Map<Choice, FlxText>; // this map will contain the FlxTexts for our 2 options: Fight and Flee
 
 	var results:FlxText; // this text will show the outcome of the battle for the playerSprite.
 
@@ -101,13 +97,13 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 
 		// next, make a 'dummy' playerSprite that looks like our playerSprite (but can't move) and add it.
 		playerSprite = new Player(background.x + 36, background.y + 16);
-		playerSprite.animation.frameIndex = 0;
+		playerSprite.animation.frameIndex = 3;
 		playerSprite.active = false;
 		playerSprite.facing = FlxObject.RIGHT;
 		add(playerSprite);
 
 		// do the same thing for an enemySprite. We'll just use enemySprite type REGULAR for now and change it later.
-		enemySprite = new Enemy(background.x + 176, background.y + 16, REGULAR);
+		enemySprite = new Enemy(background.x + 76, background.y + 16, REGULAR);
 		enemySprite.animation.frameIndex = 3;
 		enemySprite.active = false;
 		enemySprite.facing = FlxObject.LEFT;
@@ -115,15 +111,12 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 
 		// setup the playerSprite's health display and add it to the group.
 		playerHealthCounter = new FlxText(0, playerSprite.y + playerSprite.height + 2, 0, player.hp + " / " + player.hp, 8);
-		healthIcon = new FlxSprite(playerHealthCounter.x + 60, playerHealthCounter.y - 2, AssetPaths.health__png);
-		healthIcon.scale.set(0.75, 0.75);
 		playerHealthCounter.alignment = CENTER;
 		playerHealthCounter.x = playerSprite.x + 4 - (playerHealthCounter.width / 2);
 		add(playerHealthCounter);
-		add(healthIcon);
 
 		// create and add a FlxBar to show the enemySprite's health. We'll make it Red and Yellow.
-		enemyHealthBar = new FlxBar(enemySprite.x - 20, playerHealthCounter.y + 5, LEFT_TO_RIGHT, 50, 10);
+		enemyHealthBar = new FlxBar(enemySprite.x - 6, playerHealthCounter.y, LEFT_TO_RIGHT, 20, 10);
 		enemyHealthBar.createFilledBar(0xffdc143c, FlxColor.YELLOW, true, FlxColor.YELLOW);
 		add(enemyHealthBar);
 
@@ -143,13 +136,6 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		pointer.visible = false;
 		add(pointer);
 
-		// Create but don't add yet the spell list
-		for (sp in player.spellBook)
-		{
-			spellChoices[sp] = new FlxText(background.x + 20, background.y + 105 + spellIndex * 9, 85, sp.name, 9);
-			spellIndex++;
-		}
-
 		// create our damage texts. We'll make them be white text with a red shadow (so they stand out).
 		damages = new Array<FlxText>();
 		damages.push(new FlxText(0, 0, 40));
@@ -164,7 +150,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		}
 
 		// create our results text object. We'll position it, but make it hidden for now.
-		results = new FlxText(background.x + 50, background.y + 30, 116, "", 18);
+		results = new FlxText(background.x + 2, background.y + 9, 116, "", 18);
 		results.alignment = CENTER;
 		results.color = FlxColor.YELLOW;
 		results.setBorderStyle(SHADOW, FlxColor.GRAY);
@@ -310,10 +296,10 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				selectedId--;
 			else
 				selectedId++;
-			if (selectedId >= selectionArray.length)
+			if (selectedId > 3)
 				selectedId = 0;
 			if (selectedId < 0)
-				selectedId = selectionArray.length - 1;
+				selectedId = 3;
 			selected = selectionArray[selectedId];
 			movePointer();
 		}
@@ -406,14 +392,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				FlxTween.num(damages[0].y, damages[0].y - 12, 1, {ease: FlxEase.circOut}, updateDamageY);
 				FlxTween.num(0, 1, .2, {ease: FlxEase.circInOut, onComplete: doneDamageIn}, updateDamageAlpha);
 			case SPELL:
-				for (i in choices)
-				{
-					remove(i);
-				}
-				for (i in spellChoices)
-				{
-					add(i);
-				}
+				trace("TODO");
 			case ITEM:
 				trace("TODO");
 			case FLEE:

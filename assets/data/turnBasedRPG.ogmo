@@ -32,7 +32,7 @@
       "exportID": "99535391",
       "exportMode": 0,
       "arrayMode": 0,
-      "defaultTileset": ""
+      "defaultTileset": "gbaWalls"
     }
   ],
   "entities": [
@@ -143,9 +143,48 @@
       "nodeGhost": true,
       "tags": [],
       "values": []
+    },
+    {
+      "exportID": "15623606",
+      "name": "todd",
+      "limit": -1,
+      "size": {"x": 16, "y": 16},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#77ff00ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": false,
+      "resizeableY": false,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": [],
+      "values": []
     }
   ],
   "tilesets": [
-    {"label": "New Tileset", "path": "../images/tiles.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAAAXNSR0IArs4c6QAAADtJREFUSIntz7ERACAMw0Bg/5aMkoLlYAgXotD3Pp/mCJ3um+x3VfS/ovUHDKAZQDOAZgDNAJoBNANoDzFPBQa7y14tAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
+    {"label": "New Tileset", "path": "../images/tiles.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAAAXNSR0IArs4c6QAAADtJREFUSIntz7ERACAMw0Bg/5aMkoLlYAgXotD3Pp/mCJ3um+x3VfS/ovUHDKAZQDOAZgDNAJoBNANoDzFPBQa7y14tAAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
+    {"label": "gbaTiles", "path": "../images/tilesetAttemptGBAPalette.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAtBJREFUeJztWiFy6zAQfc38GYcV5ASBZj1EUUgOENaCot7gw7DCooDAsJKQoN7DMBdIeYv8Qf9qbEeWt9JT5bR6MxlNa0fafXpZrVYCfjmuvvqFYlbUMQwRfLx9fNmmEPyx/dPlZLkssVocsTvMo7R/H9A7dgxyrmwOx3bSn5x3OiGTptPrzXS0zu8Oc2PfejMN9dvA/ARkkGpfYYfxkiAtUFEIMAqQzstl+UnCCJx0tSycKWC1OI5SAV1lRlOAJhBFcW7gvW5sYsEQoDUKAJ0E2/jDMYCIYlbUN3c39dPLtbVtPi9mRe97vm0xK0y/2v5ZCVmvArryq/aVWYdjBTSZ2e9UgDoGlMsSQJwkSdb1al+p+2fBvgpYAh+gN86nlf61eQhrFTCp8BgywGrfdmq9mTonhZoKjyH5aaa5Q86zYAjwza+bgcu3tcUETcxgYAJ87qp81/ZQ+McMDibNP1IYErp0hqJFQFZAVkBWQFbApShgvZlSKtQmExxae2NK0YcEaiaY84D/yDEgKyArICsgK+ACFMBaAgGCAlaLoyHCp00pf8ByOuwqjfUVLUOc0Y7RfC5gqMAURSUTdBYlYS9aApxSucZ5ec4qi52VxQH3bALn9cNuH77Oa8aOtgpIx5piZN8shZAg5w6ulLxpG50ATeSVCwqv20fnLIWQoN2UUSFnc5pzuVO9bbXd58wzw74zQfkwfG9dkQGGZ+/2/hmv20fc3j/TFbA7zJ3qkpkXW6kEiAQ1BvY5H0qC9O0iQWykoikr+fjIn/Fz6BvDZiOVANedAB/nfUhwOR/rfoAhYOhiRCoSXLZRCdAa5hvBGUqIoYDWXsC3MKptAc6eQRIyxl6g1YEQEeuuAMBJl5l3hq0dxb4R7otol6UvGad6GzRZk+FXfjYyAakNSI1MQGoDUiMTkNqA1MgEpDYgNTIBqQ1IjUxAagNSIxOQ2oDU+AfGxlWwNORbaQAAAABJRU5ErkJggg==", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
+    {"label": "gbaWalls", "path": "../images/gbaTiles.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALAAAAAQCAYAAAC2q/WwAAAAAXNSR0IArs4c6QAAAppJREFUaIHdmj1uAjEQhV+iFByAjirl3iNVGg6QMgUSEjeg5AZISBSUOcA2qXIPl6noOAAdaTLR4Nhje+wNsxkJuVix8+Nv3nq9vkOlnS6HS+09xm6z6RKb/QRv7494ef4sGltYqc+X50+sF2ccT7urHLp5p7oXAFXu2tH17if2u9ri/TXAs+ly0PvzSS2xW0HcAgJeUwli17vg9Zo4cn3w62TH0w4PVdUbyCRItSqRO0q+U3DfQoG1ea776/tQ87ne4Q2RGqMLXq+JoxReur5enAEA99UVbGCz6fLq1807bPaT4Dj04ynmd7Of/IrTN+3jt8a0efrG40nF63oXvFctvDm+fZ8mAAbwp5C2gDtkY1Jg33iOUdX+Vr3YHNXE0807AMB6cRbr78dvBmDeiRZg1YD3HxRYgpca+OOwEvOpgTj3PYLMDMA8iTFALOUwRgV2vctSv4/DCk+v2yjEQLsXulgj8Rc5MwD7nWgBUj7G1n2xHKwrMK3pyegRnvovwfv0um2uwNQgqYanWAFDAJd04NBwxh5vMfBuuQ9co2R8VyVXOCR4ayFOqTuPkcwMwLlQAfJCX6uCNeAdTzt1TK3rpm0cejTTqAWsBmKu7r4PHhu9TAKGAJYUjxcUgFrtpMkkAHNBzMnBsgL75m8b+hBzsFIKrIU45oP2f0O7QGYAlpKjglLntYSXTyYBpQVvzAocq3mOOraCOORD+voHGAI4lRwt3Id4waOOTn0J+s8KHKu5r44EWqkvLcTSnjNgCGApKVr7DLk7AaBoC680B+sKnFo6lUJbC7Hkk6+BTRzmqTkJ1XLk+4uAvNZudZqrhWny9eOnHIDhzpsAbT4387jNAAwMf1CnZHJzPqn6AI/lNFoI3tB8WLNQzF8moNIXCisnPAAAAABJRU5ErkJggg==", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0},
+    {"label": "gbaFloor", "path": "../images/gbafloor.png", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAQCAYAAAB3AH1ZAAAAAXNSR0IArs4c6QAAAClJREFUSIljZKAQvPk/9z8l+pkodQClYNQBow4YdcCoA0YdMOqAUQcAABCnA6cJp2U4AAAAAElFTkSuQmCC", "tileWidth": 16, "tileHeight": 16, "tileSeparationX": 0, "tileSeparationY": 0}
   ]
 }

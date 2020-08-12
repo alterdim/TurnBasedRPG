@@ -1,12 +1,15 @@
 package;
 
 import entities.Enemy;
+import entities.Interactable;
 import entities.Player;
+import entities.zone1.Todd;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxState;
 import flixel.addons.editors.ogmo.FlxOgmo3Loader;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.input.gamepad.id.PSVitaID;
 import flixel.tile.FlxTilemap;
 import haxe.macro.Expr.Case;
 
@@ -18,14 +21,22 @@ class PlayState extends FlxState
 	var map:FlxOgmo3Loader;
 	var walls:FlxTilemap;
 	var enemies:FlxTypedGroup<Enemy>;
+	var interactables:FlxTypedGroup<Interactable>;
+	var todd:Todd;
 	var hud:HUD;
 	var money:Int = 0;
 	var health:Int;
 	var inCombat:Bool = false;
 	var combatHud:CombatHUD;
+	var npcCooldown:Int = 0;
+
+	var choiceHud:ChoiceHUD;
+	var inChoice:Bool = false;
+	var currentResult:String;
 
 	override public function create()
 	{
+		trace("hello world");
 		#if FLX_MOUSE
 		FlxG.mouse.visible = false;
 		#end
@@ -58,12 +69,23 @@ class PlayState extends FlxState
 				enemies.active = true;
 			}
 		}
+		else if (inChoice && !choiceHud.visible)
+		{
+			currentResult = choiceHud.outcome.textContent;
+			inChoice = false;
+			player.active = true;
+			enemies.active = true;
+		}
 		else
 		{
 			FlxG.collide(player, walls);
 			FlxG.collide(enemies, walls);
 			enemies.forEachAlive(checkEnemyVision);
 			FlxG.overlap(player, enemies, playerTouchEnemy);
+			if (npcCooldown == 0 && !inChoice)
+				FlxG.overlap(player, interactables, startChoice);
+			else if (!inChoice)
+				npcCooldown--;
 		}
 	}
 
@@ -83,14 +105,25 @@ class PlayState extends FlxState
 	function initializeEntities()
 	{
 		player = new Player();
+		todd = new Todd();
+		choiceHud = new ChoiceHUD();
 		hud = new HUD(player);
+		interactables = new FlxTypedGroup<Interactable>();
+		interactables.add(todd);
 		enemies = new FlxTypedGroup<Enemy>();
 		map = new FlxOgmo3Loader(AssetPaths.turnBasedRPG__ogmo, AssetPaths.room_001__json);
 		combatHud = new CombatHUD(player);
-		walls = map.loadTilemap(AssetPaths.tiles__png, "walls");
+		walls = map.loadTilemap(AssetPaths.gbaTiles__png, "walls");
 		walls.follow();
 		walls.setTileProperties(1, FlxObject.NONE);
 		walls.setTileProperties(2, FlxObject.ANY);
+		walls.setTileProperties(3, FlxObject.ANY);
+		walls.setTileProperties(4, FlxObject.ANY);
+		walls.setTileProperties(5, FlxObject.ANY);
+		walls.setTileProperties(6, FlxObject.ANY);
+		walls.setTileProperties(8, FlxObject.ANY);
+		walls.setTileProperties(9, FlxObject.ANY);
+		walls.setTileProperties(10, FlxObject.ANY);
 		map.loadEntities(placeEntities, "entities");
 	}
 
@@ -110,6 +143,15 @@ class PlayState extends FlxState
 		combatHud.initCombat(player.hp, enemy);
 	}
 
+	function startChoice(player:Player, interactable:Interactable)
+	{
+		inChoice = true;
+		player.active = false;
+		enemies.active = false;
+		npcCooldown = 100;
+		choiceHud.pushChoices(interactable.getChoices());
+	}
+
 	function placeEntities(entity:EntityData)
 	{
 		switch entity.name
@@ -120,6 +162,8 @@ class PlayState extends FlxState
 				enemies.add(new Enemy(entity.x + 4, entity.y, REGULAR));
 			case "boss":
 				enemies.add(new Enemy(entity.x + 4, entity.y, BOSS));
+			case "todd":
+				todd.setPosition(entity.x, entity.y);
 		}
 	}
 
@@ -128,7 +172,9 @@ class PlayState extends FlxState
 		add(walls);
 		add(player);
 		add(enemies);
+		add(interactables);
 		add(hud);
+		add(choiceHud);
 		add(combatHud);
 	}
 }

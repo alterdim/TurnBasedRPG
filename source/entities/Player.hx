@@ -9,6 +9,8 @@ class Player extends Entity
 {
 	static inline var SPEED:Float = 120;
 
+	public var activate:Bool = false;
+
 	public function new(x:Float = 0, y:Float = 0)
 	{
 		super(x, y, "soldierwalking");
@@ -45,6 +47,7 @@ class Player extends Entity
 		down = FlxG.keys.anyPressed([DOWN, S]);
 		left = FlxG.keys.anyPressed([LEFT, A]);
 		right = FlxG.keys.anyPressed([RIGHT, D]);
+		activate = FlxG.keys.anyPressed([ENTER, SPACE]);
 		#end
 
 		#if mobile
