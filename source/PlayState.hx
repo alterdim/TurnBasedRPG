@@ -30,6 +30,7 @@ class PlayState extends FlxState
 	var combatHud:CombatHUD;
 	var npcCooldown:Int = 0;
 
+	var choiceFunction = function() {}
 	var choiceHud:ChoiceHUD;
 	var inChoice:Bool = false;
 	var currentResult:String;
@@ -69,12 +70,9 @@ class PlayState extends FlxState
 				enemies.active = true;
 			}
 		}
-		else if (inChoice && !choiceHud.visible)
+		else if (inChoice)
 		{
-			currentResult = choiceHud.outcome.textContent;
-			inChoice = false;
-			player.active = true;
-			enemies.active = true;
+			choiceFunction();
 		}
 		else
 		{
@@ -148,8 +146,27 @@ class PlayState extends FlxState
 		inChoice = true;
 		player.active = false;
 		enemies.active = false;
-		npcCooldown = 100;
-		choiceHud.pushChoices(interactable.getChoices());
+
+		switch interactable
+		{
+			case todd:
+				choiceHud.pushChoices(interactable.getChoices());
+				choiceFunction = toddTalk;
+		}
+	}
+
+	function toddTalk()
+	{
+		if (!(choiceHud.outcome == null))
+		{
+			currentResult = choiceHud.outcome.textContent;
+			npcCooldown = 100;
+			choiceHud.terminate();
+			choiceHud.outcome = null;
+			inChoice = false;
+			player.active = true;
+			enemies.active = true;
+		}
 	}
 
 	function placeEntities(entity:EntityData)
@@ -176,5 +193,6 @@ class PlayState extends FlxState
 		add(hud);
 		add(choiceHud);
 		add(combatHud);
+		add(combatHud.choiceHud);
 	}
 }

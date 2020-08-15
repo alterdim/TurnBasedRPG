@@ -1,5 +1,6 @@
 package entities;
 
+import abilities.Element;
 import abilities.Spell;
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -25,7 +26,7 @@ class Player extends Entity
 		drag.x = drag.y = 1600;
 		setSize(8, 8);
 		offset.set(4, 4);
-		var spellTest:Spell = new Spell("Test", 0, true, 3, 0.03, "A spell");
+		var spellTest:Spell = new Spell("Test", 0, true, Element.NONE, 3, 10, "A spell");
 		learnSpell(spellTest);
 	}
 

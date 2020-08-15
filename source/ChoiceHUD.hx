@@ -4,6 +4,8 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 
 using flixel.util.FlxSpriteUtil;
@@ -22,13 +24,15 @@ class ChoiceHUD extends FlxTypedGroup<FlxSprite>
 	var selectedId:Int;
 	var choiceDone:Bool;
 
+	var alpha:Float;
+	var wait:Bool = true;
+
 	public function new()
 	{
 		super();
 		screen = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 		background = new FlxSprite().makeGraphic(302, 203, FlxColor.WHITE);
-		background.drawRect(1, 1, 300, 80, FlxColor.BLACK);
-		background.drawRect(1, 82, 300, 120, FlxColor.BLACK);
+		background.drawRect(100, 82, 120, 300, FlxColor.BLACK);
 		background.screenCenter();
 		add(background);
 		debugChoice = new Choice("debug", background, 0);
@@ -37,7 +41,12 @@ class ChoiceHUD extends FlxTypedGroup<FlxSprite>
 		active = false;
 		visible = false;
 		add(pointer);
-		trace(background.visible);
+
+		forEach(function(sprite:FlxSprite)
+		{
+			sprite.scrollFactor.set();
+			sprite.alpha = 0;
+		});
 	}
 
 	public function pushChoices(newChoices:Array<String>)
@@ -51,12 +60,31 @@ class ChoiceHUD extends FlxTypedGroup<FlxSprite>
 			currentChoices[i] = new Choice(newChoices[i], background, i);
 			add(currentChoices[i].textSprite);
 		}
-		active = true;
 		visible = true;
 		pointer.visible = true;
 		selected = currentChoices[0];
 		selectedId = 0;
 		movePointer();
+		FlxTween.num(0, 1, .66, {ease: FlxEase.circOut, onComplete: finishFadeIn}, updateAlpha);
+	}
+
+	function finishFadeOut(_)
+	{
+		active = false;
+		visible = false;
+	}
+
+	function updateAlpha(alpha:Float)
+	{
+		this.alpha = alpha;
+		forEach(function(sprite) sprite.alpha = alpha);
+	}
+
+	function finishFadeIn(_)
+	{
+		active = true;
+		wait = false;
+		pointer.visible = true;
 	}
 
 	function movePointer()
@@ -74,9 +102,14 @@ class ChoiceHUD extends FlxTypedGroup<FlxSprite>
 
 	function makeChoice()
 	{
-		choiceDone = true;
 		outcome = selected;
-		visible = active = false;
+	}
+
+	public function terminate()
+	{
+		choiceDone = true;
+		FlxTween.num(1, 0, .66, {ease: FlxEase.circOut, onComplete: finishFadeOut, startDelay: 1}, updateAlpha);
+		return selected.textContent;
 	}
 
 	function updateTouchInput()

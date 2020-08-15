@@ -1,5 +1,7 @@
 package;
 
+import abilities.Element;
+import abilities.Spell;
 import entities.Enemy;
 import entities.Entity;
 import entities.Player;
@@ -77,11 +79,19 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 
 	var screen:FlxSprite;
 
+	public var choiceHud:ChoiceHUD;
+
+	var inChoice:Bool = false;
+	var currentResult:String;
+	var castingSpell:Spell;
+
 	public function new(player:Player)
 	{
 		super();
 
 		this.player = player;
+
+		choiceHud = new ChoiceHUD();
 
 		screen = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 		var waveEffect = new FlxWaveEffect(FlxWaveMode.ALL, 4, -1, 4);
@@ -176,6 +186,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 	 */
 	public function initCombat(playerHealth:Int, enemy:Enemy)
 	{
+		selectedId = 0;
 		screen.drawFrame();
 		var screenPixels = screen.framePixels;
 
@@ -259,7 +270,54 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 			updateKeyboardInput();
 			updateTouchInput();
 		}
+		if (inChoice && !(choiceHud.outcome == null))
+		{
+			executeAbilityDamage();
+			inChoice = false;
+			choiceHud.outcome = null;
+			choiceHud.terminate();
+		}
 		super.update(elapsed);
+	}
+
+	function executeAbilityDamage()
+	{
+		castingSpell = player.getSpellMap().get(choiceHud.outcome.textContent);
+		trace(castingSpell.name);
+		if (FlxG.random.bool(95))
+		{
+			var damageCount:Int = Math.floor(calculateAbilityDamage(player, enemy, castingSpell));
+			damages[1].text = Std.string(damageCount);
+			FlxTween.tween(enemySprite, {x: enemySprite.x + 4}, 0.1, {
+				onComplete: function(_)
+				{
+					FlxTween.tween(enemySprite, {x: enemySprite.x - 4}, 0.1);
+				}
+			});
+			enemyHealth -= damageCount;
+			enemyHealthBar.value = (enemyHealth / enemyMaxHealth) * 100; // change the enemySprite's health bar
+		}
+		else
+		{
+			// change our damage text to show that we missed!
+			damages[1].text = "MISS!";
+		}
+
+		// position the damage text over the enemySprite, and set it's alpha to 0 but it's visible to true (so that it gets draw called on it)
+		damages[1].x = enemySprite.x + 2 - (damages[1].width / 2);
+		damages[1].y = enemySprite.y + 4 - (damages[1].height / 2);
+		damages[1].alpha = 0;
+		damages[1].visible = true;
+
+		// if the enemySprite is still alive, it will swing back!
+		if (enemyHealth > 0)
+		{
+			enemyAttack();
+		}
+
+		// setup 2 tweens to allow the damage indicators to fade in and float up from the sprites
+		FlxTween.num(damages[0].y, damages[0].y - 12, 1, {ease: FlxEase.circOut}, updateDamageY);
+		FlxTween.num(0, 1, .2, {ease: FlxEase.circInOut, onComplete: doneDamageIn}, updateDamageAlpha);
 	}
 
 	function updateKeyboardInput()
@@ -334,15 +392,43 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		pointer.y = choices[selected].y + (choices[selected].height / 2) - 8;
 	}
 
-	function calculatePhysicalDamage(attacker:Entity, attacked:Entity, modifier:Int = 1)
+	function calculatePhysicalDamage(attacker:Entity, attacked:Entity)
 	{
 		if (FlxG.random.bool(95))
-			return ((attacker.atk) / 2 - (attacked.def / 4)) * modifier;
+			return ((attacker.atk) / 2 - (attacked.def / 4));
 		else
 		{
 			FlxG.camera.shake(0.01, 0.2);
-			return (attacker.atk / 2) * modifier;
+			return (attacker.atk / 2);
 		}
+	}
+
+	function calculateAbilityDamage(attacker:Entity, attacked:Entity, spell:Spell)
+	{
+		var abilityFactor = spell.element.getFactor(attacked);
+		if (spell.physical)
+		{
+			if (FlxG.random.bool(spell.critChance))
+			{
+				return (((attacker.atk / 2) * spell.factor) * abilityFactor);
+			}
+			else
+			{
+				return ((attacker.atk) / 2 - (attacked.def / 4) * abilityFactor) * spell.factor;
+			}
+		}
+		else
+		{
+			if (FlxG.random.bool(spell.critChance))
+			{
+				return (2 * spell.magicBaseDamage * abilityFactor);
+			}
+			else
+			{
+				return (spell.magicBaseDamage * abilityFactor);
+			}
+		}
+		return 1.0;
 	}
 
 	/**
@@ -392,7 +478,8 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 				FlxTween.num(damages[0].y, damages[0].y - 12, 1, {ease: FlxEase.circOut}, updateDamageY);
 				FlxTween.num(0, 1, .2, {ease: FlxEase.circInOut, onComplete: doneDamageIn}, updateDamageAlpha);
 			case SPELL:
-				trace("TODO");
+				choiceHud.pushChoices(player.getSpellArray());
+				inChoice = true;
 			case ITEM:
 				trace("TODO");
 			case FLEE:
@@ -445,6 +532,7 @@ class CombatHUD extends FlxTypedGroup<FlxSprite>
 		damages[0].y = playerSprite.y + 4 - (damages[0].height / 2);
 		damages[0].alpha = 0;
 		damages[0].visible = true;
+		selectedId = 0;
 	}
 
 	/**
